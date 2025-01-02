@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding = "UTF-8"?>
+<launch>
+  
+  <arg name="namespace" default="rov"/>
+  <arg name="x" default="0"/>
+  <arg name="y" default="0"/>
+  <arg name="z" default="-70"/>
+  <arg name="yaw" default="0.0"/>
+  <arg name="joy_id" default="0"/>
+  <arg name="axis_yaw" default="0"/>
+  <arg name="axis_x" default="4"/>
+  <arg name="axis_y" default="3"/>
+  <arg name="axis_z" default="1"/>
+  <arg name="launch_rviz" default="0"/>
+  
+  <arg name="model_name" default="rov"/>
+  <arg name="uuv_name" default="$(arg model_name)"/>
+  <arg name="base_link" default="base_link" />
+  <arg name="timeout" default="-1" />
+  <arg name="reset_tam" default="false"/>
+  <arg name="output_dir" default="$(find uuv_thruster_manager)/config/$(arg model_name)"/>
+  <arg name="config_file" default="$(find uuv_thruster_manager)/config/$(arg model_name)/thruster_manager.yaml"/>
+  <arg name="tam_file" default="$(find uuv_thruster_manager)/config/$(arg model_name)/TAM.yaml"/>
+
+    <!--Launch new world and spawn robot-->
+    <include file="$(find uuv_gazebo_worlds)/launch/empty_underwater_world.launch" />
+  
+    <param name = "robot_description" command = "cat '$(find rov)/urdf/ROV.urdf'" />
+    
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+      <param name="use_gui" value="True"/>
+    </node>
+  
+    <arg name="p_x" default="0"/>
+    <arg name="p_y" default="0"/>
+    <arg name="p_z" default="0"/>
+
+    <node name = "spawn_rov" pkg = "gazebo_ros" type = "spawn_model" output = "screen"
+          args = "-urdf -param robot_description -model ROV -x $(arg p_x) -y $(arg p_y) -z $(arg p_z)"/>
+        
+    <!--Include teleop node for control and thrusters.py for thruster input-->
+    <group ns="$(arg namespace)">
+      <rosparam file="$(find uuv_control_cascaded_pid)/config/rexrov/inertial.yaml" command="load"/>
+      <rosparam file="$(find uuv_control_cascaded_pid)/config/rexrov/vel_pid_control.yaml" command="load"/>
+      
+      <node pkg="rov" type="teleop_rov.py" name="teleop" output="screen"/>
+      
+      <node pkg="rov" type="thrusters.py" name="thrusters" output="screen"/>
+    </group>
+
+</launch>

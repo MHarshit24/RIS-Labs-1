@@ -1,0 +1,22 @@
+<launch>
+<!--This launch file initializes the auv_master_control node-->
+  <arg name="namespace" default="rexrov"/>
+  <arg name="x" default="0"/>
+  <arg name="y" default="0"/>
+  <arg name="z" default="-70"/>
+  <arg name="yaw" default="0.0"/>
+  <arg name="joy_id" default="0"/>
+  <arg name="axis_yaw" default="0"/>
+  <arg name="axis_x" default="4"/>
+  <arg name="axis_y" default="3"/>
+  <arg name="axis_z" default="1"/>
+  <arg name="launch_rviz" default="1"/>
+
+    <node pkg="rov" type="auv.py" name="auv_master_control"
+            output="screen">
+      <param name="tf_prefix" type="string" value="$(arg namespace)/"/>
+      <remap from="odom" to="/$(arg namespace)/pose_gt"/>
+      <remap from="cmd_accel" to="/$(arg namespace)/cmd_accel"/>
+    </node>
+    
+</launch>
